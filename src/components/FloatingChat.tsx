@@ -33,7 +33,7 @@ export function FloatingChat() {
         {isOpen && (
           <div className="h-full flex flex-col">
             <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-lg font-semibold">AI Assistant</h2>
+              <h2 className="text-lg font-semibold">iAssistant</h2>
               <button
                 onClick={() => setIsOpen(false)}
                 className="p-2 hover:bg-gray-100 rounded-full"

@@ -5,10 +5,10 @@ export function FeaturesSection() {
   const features = [
     {
       icon: <Bot className="h-6 w-6" />,
-      title: 'AI Assistant',
+      title: 'iHubBiz Assistant',
       description: 'Get personalized recommendations and answers to your questions instantly.',
       action: {
-        text: 'Try AI Assistant',
+        text: 'Try our Assistant',
         link: '/chat'
       }
     },
@@ -46,10 +46,10 @@ export function FeaturesSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Powered by Advanced AI
+            Powered by advanced IHubBiz analytics
           </h2>
           <p className="mt-4 text-lg text-gray-600">
-            Our platform combines cutting-edge AI technology with local business insights to provide you with the best experience.
+            Our platform combines cutting-edge technology with local business insights to provide you with the best experience.
           </p>
           <div className="mt-8">
             <Link

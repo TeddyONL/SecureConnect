@@ -13,14 +13,14 @@ const testimonials: Testimonial[] = [
     id: '1',
     name: 'Ouma',
     role: 'Business Owner',
-    content: 'This platform has transformed how I manage my business. The AI assistance and user-friendly interface make it incredibly easy to connect with customers.',
+    content: 'This platform has transformed how I manage my business. The iAssistance and user-friendly interface make it incredibly easy to connect with customers.',
     image: 'https://ui-avatars.com/api/?name=Ouma&background=06B6D4&color=fff'
   },
   {
     id: '2',
     name: 'Ken',
     role: 'Regular Customer',
-    content: 'I love how easy it is to find and connect with local businesses. The verified reviews and AI recommendations have never steered me wrong!',
+    content: 'I love how easy it is to find and connect with local businesses. The verified reviews and recommendations have never steered me wrong!',
     image: 'https://ui-avatars.com/api/?name=Ken&background=FB923C&color=fff'
   },
   {

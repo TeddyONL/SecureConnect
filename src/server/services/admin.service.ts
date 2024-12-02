@@ -1,8 +1,39 @@
 import { prisma } from '../config/database';
 import { ApiError } from '../utils/ApiError';
-import { Prisma, Role } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+
+type Role = 'user' | 'admin' | 'super_admin';
 
 export class AdminService {
+  static async getDashboardStats() {
+    const [
+      totalUsers,
+      activeUsers,
+      totalBusinesses,
+      verifiedBusinesses,
+      pendingVerifications,
+      totalReviews,
+    ] = await Promise.all([
+      prisma.user.count(),
+      prisma.user.count({ where: { isActive: true } }),
+      prisma.business.count(),
+      prisma.business.count({ where: { isVerified: true } }),
+      prisma.business.count({ where: { isVerified: false } }),
+      prisma.review.count(),
+    ]);
+
+    return {
+      totalUsers,
+      activeUsers,
+      totalBusinesses,
+      verifiedBusinesses,
+      pendingVerifications,
+      totalReviews,
+      totalReports: 0,
+      pendingReports: 0,
+    };
+  }
+
   static async getUsers(query: {
     search?: string;
     role?: Role;
@@ -16,8 +47,8 @@ export class AdminService {
     const where: Prisma.UserWhereInput = {
       ...(search && {
         OR: [
-          { email: { contains: search, mode: 'insensitive' as Prisma.QueryMode } },
-          { name: { contains: search, mode: 'insensitive' as Prisma.QueryMode } },
+          { email: { contains: search, mode: Prisma.QueryMode.insensitive } },
+          { name: { contains: search, mode: Prisma.QueryMode.insensitive } },
         ],
       }),
       ...(role && { role }),

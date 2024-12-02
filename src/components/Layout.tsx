@@ -46,7 +46,7 @@ export function Layout() {
             <div className="flex items-center">
               <Link to="/" className="flex items-center space-x-2">
                 <span className="text-xl font-bold text-primary-600">
-                  SecureConnect
+                  iHubBiz
                 </span>
               </Link>
             </div>

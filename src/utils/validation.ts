@@ -6,7 +6,7 @@ export const schemas = {
   // User registration schema
   registration: z.object({
     email: z.string().email(),
-    password: security.passwordSchema,
+    password: z.string().min(6),
     name: z.string().min(2).max(50),
   }),
 

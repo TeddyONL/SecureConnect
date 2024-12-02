@@ -31,14 +31,14 @@ export function HeroSection() {
           <div className="space-y-4">
             <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-white/10 text-white border border-white/20 backdrop-blur-sm">
               <Sparkles className="h-4 w-4 mr-2" />
-              <span className="text-sm font-medium">AI-Powered Business Discovery</span>
+              <span className="text-sm font-medium">iHubBiz Business Discovery</span>
             </div>
             <h1 className="text-4xl sm:text-6xl font-bold text-white tracking-tight">
               Discover Local Businesses
-              <span className="block text-blue-400">With AI Assistance</span>
+              <span className="block text-blue-400">With advanced assistance</span>
             </h1>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Find, connect, and engage with local businesses in Nairobi using our advanced AI-powered platform.
+              Find, connect, and engage with local businesses in Nairobi using our advanced  platform.
             </p>
           </div>
 

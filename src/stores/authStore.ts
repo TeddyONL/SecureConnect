@@ -1,11 +1,16 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { AuthStore, User } from '../types';
-import { security } from '../lib/security';
-import { schemas, validate } from '../utils/validation';
+import { validate, schemas } from '../utils/validation';
+import axios from 'axios';
 
 const REFRESH_TOKEN_INTERVAL = 1000 * 60 * 14; // 14 minutes
 const SESSION_TIMEOUT = 1000 * 60 * 60; // 1 hour
+
+const api = axios.create({
+  baseURL: 'http://localhost:3001/api',
+  withCredentials: true,
+});
 
 export const useAuthStore = create<AuthStore>()(
   persist(
@@ -17,20 +22,19 @@ export const useAuthStore = create<AuthStore>()(
 
       login: async (email: string, password: string) => {
         try {
-          // Validate input
+          // Validate input using Zod schema
           const validation = validate(schemas.login)({ email, password });
           if (validation.error) {
             throw new Error(validation.error[0].message);
           }
 
-          // Sanitize email
-          const sanitizedEmail = email.toLowerCase().trim();
+          // Make API call
+          const response = await api.post('/auth/login', {
+            email: email.toLowerCase().trim(),
+            password
+          });
 
-          // Hash password with salt and pepper
-          const { hash, salt } = await security.hashPassword(password);
-
-          // Make API call (mocked for demo)
-          const user = await mockLoginCall(sanitizedEmail, hash, salt);
+          const { user, accessToken } = response.data;
 
           // Set up refresh token rotation
           const refreshTimeout = setInterval(async () => {
@@ -47,6 +51,9 @@ export const useAuthStore = create<AuthStore>()(
           // Set up session monitoring
           setupSessionMonitoring(get, set);
 
+          // Set authorization header for future requests
+          api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+
           return user;
         } catch (error) {
           set({ user: null, isInitialized: true });
@@ -56,33 +63,29 @@ export const useAuthStore = create<AuthStore>()(
 
       register: async (email: string, password: string, name: string) => {
         try {
-          // Validate input
+          // Validate input using Zod schema
           const validation = validate(schemas.registration)({ email, password, name });
           if (validation.error) {
             throw new Error(validation.error[0].message);
           }
 
-          // Sanitize email and name
-          const sanitizedEmail = email.toLowerCase().trim();
-          const sanitizedName = name.trim();
+          // Make API call
+          const response = await api.post('/auth/register', {
+            email: email.toLowerCase().trim(),
+            password,
+            name: name.trim()
+          });
 
-          // Hash password
-          const { hash, salt } = await security.hashPassword(password);
-
-          // Mock registration (replace with actual API call)
-          const user: User = {
-            id: `user-${Date.now()}`,
-            email: sanitizedEmail,
-            name: sanitizedName,
-            role: 'user',
-            token: security.generateToken()
-          };
+          const { user, accessToken } = response.data;
 
           set({ 
             user,
             isInitialized: true,
             lastActivity: Date.now()
           });
+
+          // Set authorization header for future requests
+          api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
 
           return user;
         } catch (error) {
@@ -91,30 +94,39 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      logout: () => {
-        const { refreshTokenTimeout } = get();
-        if (refreshTokenTimeout) {
-          clearInterval(refreshTokenTimeout);
+      logout: async () => {
+        try {
+          await api.post('/auth/logout');
+          const { refreshTokenTimeout } = get();
+          if (refreshTokenTimeout) {
+            clearInterval(refreshTokenTimeout);
+          }
+          set({ 
+            user: null,
+            isInitialized: true,
+            lastActivity: 0,
+            refreshTokenTimeout: null
+          });
+          // Clear authorization header
+          delete api.defaults.headers.common['Authorization'];
+        } catch (error) {
+          console.error('Logout failed:', error);
+          throw error;
         }
-        set({ 
-          user: null,
-          isInitialized: true,
-          lastActivity: 0,
-          refreshTokenTimeout: null
-        });
       },
 
       refreshToken: async () => {
         try {
-          const { user } = get();
-          if (!user) return;
+          const response = await api.post('/auth/refresh-token');
+          const { user, accessToken } = response.data;
 
-          // Mock token refresh (replace with actual API call)
-          const newToken = security.generateToken();
           set({
-            user: { ...user, token: newToken },
+            user,
             lastActivity: Date.now()
           });
+
+          // Update authorization header
+          api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
         } catch (error) {
           console.error('Failed to refresh token:', error);
           get().logout();
@@ -160,41 +172,4 @@ const setupSessionMonitoring = (get: any, set: any) => {
     window.removeEventListener('mousemove', updateActivity);
     window.removeEventListener('keydown', updateActivity);
   };
-};
-
-// Mock API calls (replace with real API calls)
-const mockLoginCall = async (email: string, _hash: string, _salt: string): Promise<User> => {
-  await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
-
-  // Demo users
-  const users: Record<string, User> = {
-    'admin@test.com': {
-      id: 'admin-1',
-      email: 'admin@test.com',
-      name: 'Admin User',
-      role: 'admin',
-      token: security.generateToken()
-    },
-    'user@test.com': {
-      id: 'user-1',
-      email: 'user@test.com',
-      name: 'Regular User',
-      role: 'user',
-      token: security.generateToken()
-    },
-    'super@test.com': {
-      id: 'super-1',
-      email: 'super@test.com',
-      name: 'Super Admin',
-      role: 'super_admin',
-      token: security.generateToken()
-    }
-  };
-
-  const user = users[email];
-  if (user) {
-    return user;
-  }
-
-  throw new Error('Invalid credentials');
 };

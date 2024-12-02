@@ -9,9 +9,9 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
-            <h3 className="text-white text-lg font-bold">SecureConnect</h3>
+            <h3 className="text-white text-lg font-bold">iHubBiz</h3>
             <p className="text-gray-400 text-sm">
-              Connecting local businesses with customers through advanced AI technology.
+              Connecting local businesses with customers through advanced  technology.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-gray-400 hover:text-white">
@@ -39,7 +39,7 @@ export function Footer() {
               </li>
               <li>
                 <Link to="/chat" className="text-gray-400 hover:text-white text-sm">
-                  AI Assistant
+                  iAssistant
                 </Link>
               </li>
               <li>
@@ -105,7 +105,7 @@ export function Footer() {
 
         <div className="mt-12 pt-8 border-t border-gray-800">
           <p className="text-center text-gray-400 text-sm">
-            © {year} SecureConnect. All rights reserved.
+            © {year} iHubBiz. All rights reserved.
           </p>
         </div>
       </div>
