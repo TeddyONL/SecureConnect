@@ -6,12 +6,9 @@ import {
   Phone, 
   Globe, 
   Mail,
-  Camera,
-  MessageSquare,
   Share2,
   Bookmark,
-  AlertCircle,
-  HelpCircle
+  AlertCircle
 } from 'lucide-react';
 import { Business } from '../types';
 import { BusinessPhotoGallery } from './BusinessPhotoGallery';
@@ -138,14 +135,6 @@ export function BusinessFeatures({ business }: BusinessFeaturesProps) {
             </button>
           </div>
 
-          {/* Price Range */}
-          {business.priceRange && (
-            <div className="flex items-center space-x-2">
-              <DollarSign className="w-5 h-5 text-gray-400" />
-              {getPriceRangeDisplay(business.priceRange)}
-            </div>
-          )}
-
           {/* Operating Hours */}
           <div className="space-y-2">
             <div className="flex items-center space-x-2 text-gray-600">
@@ -159,11 +148,7 @@ export function BusinessFeatures({ business }: BusinessFeaturesProps) {
                   className="grid grid-cols-2 text-sm"
                 >
                   <span className="capitalize">{hours.day}</span>
-                  <span>
-                    {hours.isClosed
-                      ? 'Closed'
-                      : `${hours.open} - ${hours.close}`}
-                  </span>
+                  <span>{`${hours.open} - ${hours.close}`}</span>
                 </div>
               ))}
             </div>
@@ -218,42 +203,21 @@ export function BusinessFeatures({ business }: BusinessFeaturesProps) {
             )}
           </div>
 
-          {/* Features & Amenities */}
-          {(business.features.length > 0 || business.amenities.length > 0) && (
-            <div className="space-y-4">
-              {business.features.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Features</h4>
-                  <div className="grid grid-cols-2 gap-2">
-                    {business.features.map((feature) => (
-                      <div
-                        key={feature}
-                        className="flex items-center space-x-2 text-sm text-gray-600"
-                      >
-                        <span>•</span>
-                        <span>{feature}</span>
-                      </div>
-                    ))}
+          {/* Features */}
+          {business.features.length > 0 && (
+            <div>
+              <h4 className="font-medium text-gray-900 mb-2">Features</h4>
+              <div className="grid grid-cols-2 gap-2">
+                {business.features.map((feature) => (
+                  <div
+                    key={feature}
+                    className="flex items-center space-x-2 text-sm text-gray-600"
+                  >
+                    <span>•</span>
+                    <span>{feature}</span>
                   </div>
-                </div>
-              )}
-
-              {business.amenities.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Amenities</h4>
-                  <div className="grid grid-cols-2 gap-2">
-                    {business.amenities.map((amenity) => (
-                      <div
-                        key={amenity}
-                        className="flex items-center space-x-2 text-sm text-gray-600"
-                      >
-                        <span>•</span>
-                        <span>{amenity}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                ))}
+              </div>
             </div>
           )}
         </div>

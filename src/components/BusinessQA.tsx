@@ -79,7 +79,7 @@ export function BusinessQA({ business }: BusinessQAProps) {
       userName: user.name,
       content: newAnswer.trim(),
       createdAt: new Date().toISOString(),
-      isOfficial: user.id === business.ownerId,
+      isOfficial: user.id === business.owner.id,
       upvotes: 0,
       downvotes: 0,
     };

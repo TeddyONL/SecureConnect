@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { useAuthStore } from '../stores/authStore';
-import { Upload, Plus, X } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
 import { useImageUpload } from '../hooks/useImageUpload';
 import toast from 'react-hot-toast';
 
 interface BusinessClaimFormProps {
-  businessId: string;
   onSubmit: (claim: {
     documents: string[];
     notes?: string;
@@ -13,11 +12,11 @@ interface BusinessClaimFormProps {
   onCancel: () => void;
 }
 
-export function BusinessClaimForm({ businessId, onSubmit, onCancel }: BusinessClaimFormProps) {
+export function BusinessClaimForm({ onSubmit, onCancel }: BusinessClaimFormProps) {
   const [documents, setDocuments] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
   const { user } = useAuthStore();
-  const { imageUrl, handleImageUpload, resetImage } = useImageUpload();
+  const { imageUrl, handleImageUpload } = useImageUpload();
 
   const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

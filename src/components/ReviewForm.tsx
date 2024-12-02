@@ -5,7 +5,6 @@ import { useImageUpload } from '../hooks/useImageUpload';
 import toast from 'react-hot-toast';
 
 interface ReviewFormProps {
-  businessId: string;
   onSubmit: (review: {
     rating: number;
     content: string;
@@ -14,14 +13,14 @@ interface ReviewFormProps {
   onCancel: () => void;
 }
 
-export function ReviewForm({ businessId, onSubmit, onCancel }: ReviewFormProps) {
+export function ReviewForm({ onSubmit, onCancel }: ReviewFormProps) {
   const [rating, setRating] = useState(0);
   const [content, setContent] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [hoveredStar, setHoveredStar] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuthStore();
-  const { imageUrl, handleImageUpload, resetImage } = useImageUpload();
+  const { imageUrl, handleImageUpload } = useImageUpload();
   const [photos, setPhotos] = useState<string[]>([]);
 
   const validateForm = () => {

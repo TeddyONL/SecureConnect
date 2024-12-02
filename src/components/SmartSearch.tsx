@@ -1,11 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, Clock, MapPin, Tag, Sparkles, Navigation } from 'lucide-react';
-import Fuse from 'fuse.js';
+import { Search, Clock, MapPin, Tag, Sparkles, Navigation, Star } from 'lucide-react';
 import { useBusinessStore } from '../stores/businessStore';
 import { Business } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from '../hooks/useLocation';
-import toast from 'react-hot-toast';
 
 interface SearchResult extends Business {
   distance?: number;
@@ -43,7 +41,7 @@ export function SmartSearch() {
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [coordinates, requesting, requestPermission]);
 
   useEffect(() => {
     if (query.length >= 2) {
@@ -51,7 +49,7 @@ export function SmartSearch() {
       const searchResults = searchBusinesses(query, coordinates || undefined);
       setResults(searchResults.slice(0, 5));
 
-      // Generate AI-powered suggestions
+      // Generate suggestions
       const generateSuggestions = () => {
         const words = query.toLowerCase().split(' ');
         const lastWord = words[words.length - 1];
@@ -83,7 +81,7 @@ export function SmartSearch() {
       setResults([]);
       setSuggestions([]);
     }
-  }, [query, coordinates, businesses]);
+  }, [query, coordinates, businesses, searchBusinesses]);
 
   const formatDistance = (distance?: number) => {
     if (!distance) return '';
@@ -177,7 +175,7 @@ export function SmartSearch() {
                   <div className="flex items-center text-xs text-gray-500 mt-1">
                     <MapPin className="w-3 h-3 mr-1" />
                     {result.location.city}
-                    {result.stats?.averageRating && (
+                    {result.stats.averageRating > 0 && (
                       <span className="ml-2 flex items-center">
                         <Star className="w-3 h-3 text-yellow-400 fill-current mr-1" />
                         {result.stats.averageRating.toFixed(1)}

@@ -65,8 +65,9 @@ export function AdvancedVerification({ business, onVerify }: AdvancedVerificatio
     if (updatedSteps.every(step => step.status === 'verified')) {
       // All steps verified, grant verification badge
       onVerify({
-        type: 'official',
-        verifiedAt: new Date().toISOString(),
+        type: 'business',
+        issuedBy: 'SecureConnect',
+        issuedAt: new Date().toISOString(),
         expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() // 1 year expiry
       });
     }
@@ -92,7 +93,7 @@ export function AdvancedVerification({ business, onVerify }: AdvancedVerificatio
             Business Verification
           </h3>
         </div>
-        {business.verificationBadge && (
+        {business.verificationBadges.length > 0 && (
           <div className="flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
             <CheckCircle className="w-4 h-4 mr-1" />
             Verified Business

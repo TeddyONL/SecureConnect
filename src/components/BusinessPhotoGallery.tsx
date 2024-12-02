@@ -11,19 +11,21 @@ interface BusinessPhotoGalleryProps {
 export function BusinessPhotoGallery({ business }: BusinessPhotoGalleryProps) {
   const [showModal, setShowModal] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const { handleImageUpload, isLoading } = useImageUpload();
+  const { handleImageUpload, imageUrl, isLoading } = useImageUpload();
   const [userPhotos, setUserPhotos] = useState<string[]>([]);
 
-  const allPhotos = [...business.gallery, ...userPhotos];
+  const allPhotos = [...business.photos, ...userPhotos];
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
-      const imageUrl = await handleImageUpload(file);
-      setUserPhotos([...userPhotos, imageUrl]);
-      toast.success('Photo uploaded successfully');
+      await handleImageUpload(file);
+      if (imageUrl) {
+        setUserPhotos([...userPhotos, imageUrl]);
+        toast.success('Photo uploaded successfully');
+      }
     } catch (error) {
       toast.error('Failed to upload photo');
     }

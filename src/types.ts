@@ -7,6 +7,11 @@ export interface User {
   token?: string;
 }
 
+export interface AdminUser extends User {
+  lastLogin: string;
+  status: 'active' | 'suspended' | 'deleted';
+}
+
 export interface AuthStore {
   user: User | null;
   isInitialized: boolean;
@@ -67,6 +72,8 @@ export interface ReportedContent {
   type: 'review' | 'business' | 'user';
   targetId: string;
   reason: string;
+  content: string;
+  details?: string;
   status: 'pending' | 'resolved' | 'dismissed';
   reportedBy: string;
   createdAt: string;
@@ -90,6 +97,9 @@ export interface Business {
   location: {
     address: string;
     county: string;
+    city: string;
+    state: string;
+    zipCode: string;
     latitude?: number;
     longitude?: number;
   };
@@ -98,30 +108,45 @@ export interface Business {
     email: string;
     website?: string;
   };
-  hours: {
-    [key: string]: string;
-  };
+  operatingHours: Array<{
+    day: string;
+    open: string;
+    close: string;
+  }>;
   photos: string[];
+  gallery: string[];
+  imageUrl?: string;
   isVerified: boolean;
   verificationBadges: VerificationBadge[];
-  stats: {
-    totalReviews: number;
-    averageRating: number;
-    totalViews: number;
-    totalBookmarks: number;
-  };
+  stats: BusinessStats;
+  owner: User;
+  ownerId: string;
+  priceRange: string;
+  amenities: string[];
   createdAt: string;
   reviews: Review[];
   claims: BusinessClaim[];
 }
 
+export interface BusinessStats {
+  id: string;
+  businessId: string;
+  totalReviews: number;
+  averageRating: number;
+  totalViews: number;
+  totalBookmarks: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Review {
   id: string;
   userId: string;
-  userName: string;
+  user: User;
   rating: number;
-  comment: string;
+  content: string;
   photos?: string[];
+  likes: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -140,6 +165,33 @@ export interface VerificationBadge {
   issuedBy: string;
   issuedAt: string;
   expiresAt?: string;
+}
+
+// Chat related types
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  content: string;
+  role: 'user' | 'assistant';
+  timestamp: number;
+  read: boolean;
+}
+
+export interface ChatRoom {
+  id: string;
+  participants: string[];
+  messages: ChatMessage[];
+  lastActivity: number;
+}
+
+export interface ChatStore {
+  messages: ChatMessage[];
+  isLoading: boolean;
+  error: string | null;
+  addMessage: (role: 'user' | 'assistant', content: string) => void;
+  clearMessages: () => void;
+  setIsLoading: (loading: boolean) => void;
 }
 
 // Analytics and Events
@@ -185,23 +237,6 @@ export interface BusinessInsights {
     devices: { [key: string]: number };
     userTypes: { [key: string]: number };
   };
-}
-
-// Chat related types
-export interface ChatMessage {
-  id: string;
-  senderId: string;
-  receiverId: string;
-  content: string;
-  timestamp: number;
-  read: boolean;
-}
-
-export interface ChatRoom {
-  id: string;
-  participants: string[];
-  messages: ChatMessage[];
-  lastActivity: number;
 }
 
 // API Response types

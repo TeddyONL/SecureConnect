@@ -111,10 +111,6 @@ export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
 
       <div className="mt-4 flex items-center space-x-4 text-sm text-gray-500">
         <button className="flex items-center hover:text-gray-700">
-          <ThumbsUp className="w-4 h-4 mr-1" />
-          <span>{review.likes}</span>
-        </button>
-        <button className="flex items-center hover:text-gray-700">
           <MessageCircle className="w-4 h-4 mr-1" />
           <span>Reply</span>
         </button>

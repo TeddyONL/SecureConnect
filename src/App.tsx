@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { MarketplacePage } from './pages/MarketplacePage';
 import { Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { Layout } from './components/Layout';
@@ -47,7 +46,6 @@ function App() {
           <Route path="new" element={<NewBusinessPage />} />
           <Route path="admin" element={<AdminPage />} />
           <Route path="chat" element={<ChatPage />} />
-          <Route path="marketplace" element={<MarketplacePage />} />
           <Route path="user/:id" element={<Navigate to="/profile" replace />} />
         </Route>
       </Routes>

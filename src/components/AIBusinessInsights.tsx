@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { AI } from '../lib/ai';
 import { Business } from '../types';
 import { Loader } from './Loader';
-import { Star, TrendingUp, AlertCircle, LightBulb } from 'lucide-react';
+import { Star, TrendingUp, AlertCircle, Lightbulb } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface AIBusinessInsightsProps {
@@ -99,7 +99,7 @@ export function AIBusinessInsights({ business }: AIBusinessInsightsProps) {
         {/* Recommendations */}
         <div className="bg-purple-50 p-6 rounded-lg">
           <div className="flex items-center mb-4">
-            <LightBulb className="h-5 w-5 text-purple-600 mr-2" />
+            <Lightbulb className="h-5 w-5 text-purple-600 mr-2" />
             <h4 className="font-medium text-purple-900">AI Recommendations</h4>
           </div>
           <ul className="space-y-2">

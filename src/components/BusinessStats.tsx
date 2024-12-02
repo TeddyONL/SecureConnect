@@ -1,13 +1,13 @@
-import { Star, Eye, Bookmark, MessageCircle, TrendingUp } from 'lucide-react';
-import { BusinessStats as BusinessStatsType } from '../types';
+import { Star, Eye, Bookmark } from 'lucide-react';
+import { Business } from '../types';
 
 interface BusinessStatsProps {
-  stats: BusinessStatsType;
+  stats: Business['stats'];
 }
 
 export function BusinessStats({ stats }: BusinessStatsProps) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
       <div className="flex flex-col items-center p-4 bg-white rounded-lg shadow-sm">
         <div className="flex items-center text-yellow-500 mb-2">
           <Star className="w-5 h-5" />
@@ -31,26 +31,6 @@ export function BusinessStats({ stats }: BusinessStatsProps) {
         </div>
         <span className="text-sm text-gray-600">Bookmarks</span>
       </div>
-
-      {stats.responseRate && (
-        <div className="flex flex-col items-center p-4 bg-white rounded-lg shadow-sm">
-          <div className="flex items-center text-green-500 mb-2">
-            <MessageCircle className="w-5 h-5" />
-            <span className="ml-1 text-lg font-semibold">{stats.responseRate}%</span>
-          </div>
-          <span className="text-sm text-gray-600">Response Rate</span>
-        </div>
-      )}
-
-      {stats.weeklyViews && (
-        <div className="flex flex-col items-center p-4 bg-white rounded-lg shadow-sm">
-          <div className="flex items-center text-orange-500 mb-2">
-            <TrendingUp className="w-5 h-5" />
-            <span className="ml-1 text-lg font-semibold">+{stats.weeklyViews}</span>
-          </div>
-          <span className="text-sm text-gray-600">Weekly Views</span>
-        </div>
-      )}
     </div>
   );
 }

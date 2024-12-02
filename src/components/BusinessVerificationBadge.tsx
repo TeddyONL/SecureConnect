@@ -9,16 +9,16 @@ interface BusinessVerificationBadgeProps {
 export function BusinessVerificationBadge({ badge, className = '' }: BusinessVerificationBadgeProps) {
   const getBadgeContent = () => {
     switch (badge.type) {
-      case 'official':
+      case 'government':
         return {
           icon: <Shield className="w-4 h-4" />,
-          text: 'Official Business',
+          text: 'Government Verified',
           colors: 'bg-blue-100 text-blue-800',
         };
-      case 'claimed':
+      case 'business':
         return {
           icon: <CheckCircle className="w-4 h-4" />,
-          text: 'Verified Owner',
+          text: 'Verified Business',
           colors: 'bg-green-100 text-green-800',
         };
       case 'premium':
@@ -38,6 +38,7 @@ export function BusinessVerificationBadge({ badge, className = '' }: BusinessVer
   return (
     <div
       className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${content.colors} ${className}`}
+      title={`Verified by ${badge.issuedBy} on ${new Date(badge.issuedAt).toLocaleDateString()}`}
     >
       {content.icon}
       <span className="ml-1">{content.text}</span>

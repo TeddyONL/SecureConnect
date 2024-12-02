@@ -46,6 +46,7 @@ model User {
   chatRooms     ChatRoom[]
   sentMessages     Message[]    @relation("SentMessages")
   receivedMessages Message[]    @relation("ReceivedMessages")
+  businessClaims BusinessClaim[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 }
@@ -74,6 +75,7 @@ model Business {
   stats       BusinessStats?
   reviews     Review[]
   chatRooms   ChatRoom[]
+  businessClaims BusinessClaim[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -93,6 +95,22 @@ model BusinessStats {
   updatedAt     DateTime  @updatedAt
 
   @@index([businessId])
+}
+
+model BusinessClaim {
+  id          String    @id @default(uuid())
+  businessId  String
+  business    Business  @relation(fields: [businessId], references: [id])
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  status      String    @default("pending") // pending, approved, rejected
+  documents   String[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([businessId])
+  @@index([userId])
+  @@index([status])
 }
 
 model Review {

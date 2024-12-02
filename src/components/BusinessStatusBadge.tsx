@@ -14,9 +14,9 @@ export function BusinessStatusBadge({ business }: BusinessStatusBadgeProps) {
     const getCurrentStatus = () => {
       const now = new Date();
       const currentDay = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
-      const hours = business.operatingHours.find(h => h.day === currentDay);
+      const hours = business.operatingHours.find(h => h.day.toLowerCase() === currentDay);
 
-      if (!hours || hours.isClosed) return 'closed';
+      if (!hours) return 'closed';
 
       const currentTime = now.getHours() * 60 + now.getMinutes();
       const [openHour, openMinute] = hours.open.split(':').map(Number);
@@ -59,7 +59,7 @@ export function BusinessStatusBadge({ business }: BusinessStatusBadgeProps) {
     const interval = setInterval(updateStatus, 60000); // Update every minute
 
     return () => clearInterval(interval);
-  }, [business]);
+  }, [business, status]);
 
   const statusConfig = {
     open: {
