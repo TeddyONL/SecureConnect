@@ -1,9 +1,9 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { prisma } from '../lib/prisma';
+import { prisma } from '../config/database';
 import config from '../config';
 import { ApiError } from '../utils/ApiError';
-import { User, RefreshToken } from '@prisma/client';
+import type { User } from '@prisma/client';
 import { add } from 'date-fns';
 
 export class AuthService {

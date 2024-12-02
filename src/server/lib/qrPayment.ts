@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import { prisma } from './prisma';
+import { prisma } from '../config/database';
 import { ApiError } from '../utils/ApiError';
 import { security } from './security';
 import { mpesaAPI } from './mpesa';
@@ -26,7 +26,7 @@ export class QRPaymentService {
       const paymentId = nanoid(16);
       
       // Create expiration timestamp (5 minutes from now)
-      const expires = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+      const expires = new Date(Date.now() + 5 * 60 * 1000);
 
       // Create payment record in database
       const payment = await prisma.payment.create({

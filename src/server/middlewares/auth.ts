@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { prisma } from '../lib/prisma';
+import { prisma } from '../config/database';
 import config from '../config';
 import { ApiError } from '../utils/ApiError';
-import { Role } from '@prisma/client';
+
+type Role = 'user' | 'admin' | 'super_admin';
 
 export interface AuthRequest extends Request {
   user?: {
@@ -34,7 +35,7 @@ export const auth = async (req: AuthRequest, res: Response, next: NextFunction) 
       throw new ApiError(401, 'User not found or inactive');
     }
 
-    req.user = { id: user.id, role: user.role };
+    req.user = { id: user.id, role: user.role as Role };
     next();
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {

@@ -1,4 +1,17 @@
-// Add this model to your existing schema.prisma file
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  user
+  admin
+  super_admin
+}
 
 model Payment {
   id          String      @id
@@ -19,8 +32,112 @@ model Payment {
   @@index([status])
 }
 
-// Add relation to User model
 model User {
-  // ... (existing fields)
-  payments    Payment[]
+  id            String         @id @default(uuid())
+  email         String        @unique
+  password      String
+  name          String?
+  role          Role          @default(user)
+  isActive      Boolean       @default(true)
+  payments      Payment[]
+  refreshTokens RefreshToken[]
+  businesses    Business[]
+  reviews       Review[]
+  chatRooms     ChatRoom[]
+  sentMessages     Message[]    @relation("SentMessages")
+  receivedMessages Message[]    @relation("ReceivedMessages")
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Business {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  category    String?
+  keywords    String[]
+  imageUrl    String?
+  isVerified  Boolean   @default(false)
+  ownerId     String
+  owner       User      @relation(fields: [ownerId], references: [id])
+  stats       BusinessStats?
+  reviews     Review[]
+  chatRooms   ChatRoom[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([ownerId])
+  @@index([category])
+}
+
+model BusinessStats {
+  id            String    @id @default(uuid())
+  businessId    String    @unique
+  business      Business  @relation(fields: [businessId], references: [id])
+  totalReviews  Int       @default(0)
+  averageRating Float     @default(0)
+  totalViews    Int       @default(0)
+  totalBookmarks Int      @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([businessId])
+}
+
+model Review {
+  id          String    @id @default(uuid())
+  rating      Float
+  content     String
+  photos      String[]  @default([])
+  businessId  String
+  business    Business  @relation(fields: [businessId], references: [id])
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([businessId])
+  @@index([userId])
+}
+
+model ChatRoom {
+  id            String    @id @default(uuid())
+  businessId    String
+  business      Business  @relation(fields: [businessId], references: [id])
+  users         User[]
+  messages      Message[]
+  lastMessageAt DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([businessId])
+}
+
+model Message {
+  id          String    @id @default(uuid())
+  content     String
+  senderId    String
+  sender      User      @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId  String
+  receiver    User      @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  chatRoomId  String
+  chatRoom    ChatRoom  @relation(fields: [chatRoomId], references: [id])
+  isRead      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([chatRoomId])
 }

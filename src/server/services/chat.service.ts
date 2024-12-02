@@ -1,4 +1,4 @@
-import { prisma } from '../lib/prisma';
+import { prisma } from '../config/database';
 import { ApiError } from '../utils/ApiError';
 import { Prisma } from '@prisma/client';
 

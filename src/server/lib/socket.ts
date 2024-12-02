@@ -1,8 +1,12 @@
 import { Server, Socket } from 'socket.io';
-import { verify } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import config from '../config';
 import logger from './logger';
-import { prisma } from './prisma';
+import { prisma } from '../config/database';
+
+declare global {
+  var io: Server;
+}
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
@@ -18,7 +22,7 @@ export const socketHandler = (io: Server) => {
         return next(new Error('Authentication required'));
       }
 
-      const decoded = verify(token, config.jwt.accessSecret) as {
+      const decoded = jwt.verify(token, config.jwt.accessSecret) as {
         id: string;
         role: string;
       };
@@ -86,15 +90,34 @@ export const socketHandler = (io: Server) => {
 
 // Event emitters
 export const emitChatEvent = (event: string, data: any) => {
-  const io = global.io as Server;
-  if (io) {
+  if (global.io) {
     if (data.chatRoomId) {
-      io.to(`chat:${data.chatRoomId}`).emit(`chat:${event}`, data);
+      global.io.to(`chat:${data.chatRoomId}`).emit(`chat:${event}`, data);
     }
     if (data.receiverId) {
-      io.to(`user:${data.receiverId}`).emit(`chat:${event}`, data);
+      global.io.to(`user:${data.receiverId}`).emit(`chat:${event}`, data);
     }
   }
 };
 
-// ... (keep existing event emitters)
+export const emitAdminEvent = (event: string, data: any) => {
+  if (global.io) {
+    global.io.to('admin').emit(`admin:${event}`, data);
+  }
+};
+
+export const emitBusinessEvent = (businessId: string, event: string, data: any) => {
+  if (global.io) {
+    global.io.to(`business:${businessId}`).emit(`business:${event}`, data);
+  }
+};
+
+export const emitReviewEvent = (businessId: string, event: string, data: any) => {
+  if (global.io) {
+    // Emit to business owner and admins
+    global.io.to(`business:${businessId}`).to('admin').emit(`review:${event}`, {
+      ...data,
+      businessId,
+    });
+  }
+};
