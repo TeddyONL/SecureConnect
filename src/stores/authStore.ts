@@ -54,7 +54,72 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      // ... (keep other existing methods)
+      register: async (email: string, password: string, name: string) => {
+        try {
+          // Validate input
+          const validation = validate(schemas.registration)({ email, password, name });
+          if (validation.error) {
+            throw new Error(validation.error[0].message);
+          }
+
+          // Sanitize email and name
+          const sanitizedEmail = email.toLowerCase().trim();
+          const sanitizedName = name.trim();
+
+          // Hash password
+          const { hash, salt } = await security.hashPassword(password);
+
+          // Mock registration (replace with actual API call)
+          const user: User = {
+            id: `user-${Date.now()}`,
+            email: sanitizedEmail,
+            name: sanitizedName,
+            role: 'user',
+            token: security.generateToken()
+          };
+
+          set({ 
+            user,
+            isInitialized: true,
+            lastActivity: Date.now()
+          });
+
+          return user;
+        } catch (error) {
+          set({ user: null, isInitialized: true });
+          throw error;
+        }
+      },
+
+      logout: () => {
+        const { refreshTokenTimeout } = get();
+        if (refreshTokenTimeout) {
+          clearInterval(refreshTokenTimeout);
+        }
+        set({ 
+          user: null,
+          isInitialized: true,
+          lastActivity: 0,
+          refreshTokenTimeout: null
+        });
+      },
+
+      refreshToken: async () => {
+        try {
+          const { user } = get();
+          if (!user) return;
+
+          // Mock token refresh (replace with actual API call)
+          const newToken = security.generateToken();
+          set({
+            user: { ...user, token: newToken },
+            lastActivity: Date.now()
+          });
+        } catch (error) {
+          console.error('Failed to refresh token:', error);
+          get().logout();
+        }
+      }
     }),
     {
       name: 'auth-storage',
@@ -69,15 +134,40 @@ export const useAuthStore = create<AuthStore>()(
 
 // Helper functions
 const setupSessionMonitoring = (get: any, set: any) => {
-  // ... (keep existing monitoring code)
+  const checkSession = () => {
+    const { lastActivity, user } = get();
+    if (user && Date.now() - lastActivity > SESSION_TIMEOUT) {
+      get().logout();
+    }
+  };
+
+  // Check session every minute
+  const interval = setInterval(checkSession, 60000);
+
+  // Update last activity on user interaction
+  const updateActivity = () => {
+    if (get().user) {
+      set({ lastActivity: Date.now() });
+    }
+  };
+
+  window.addEventListener('mousemove', updateActivity);
+  window.addEventListener('keydown', updateActivity);
+
+  // Cleanup
+  return () => {
+    clearInterval(interval);
+    window.removeEventListener('mousemove', updateActivity);
+    window.removeEventListener('keydown', updateActivity);
+  };
 };
 
 // Mock API calls (replace with real API calls)
-const mockLoginCall = async (email: string, hash: string, salt: string): Promise<User> => {
+const mockLoginCall = async (email: string, _hash: string, _salt: string): Promise<User> => {
   await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
 
   // Demo users
-  const users = {
+  const users: Record<string, User> = {
     'admin@test.com': {
       id: 'admin-1',
       email: 'admin@test.com',
@@ -85,11 +175,11 @@ const mockLoginCall = async (email: string, hash: string, salt: string): Promise
       role: 'admin',
       token: security.generateToken()
     },
-    'support@test.com': {
-      id: 'support-1',
-      email: 'support@test.com',
-      name: 'Support User',
-      role: 'support',
+    'user@test.com': {
+      id: 'user-1',
+      email: 'user@test.com',
+      name: 'Regular User',
+      role: 'user',
       token: security.generateToken()
     },
     'super@test.com': {
@@ -108,5 +198,3 @@ const mockLoginCall = async (email: string, hash: string, salt: string): Promise
 
   throw new Error('Invalid credentials');
 };
-
-// ... (keep other existing helper functions)

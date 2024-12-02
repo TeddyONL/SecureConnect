@@ -1,9 +1,51 @@
-// ... keep the existing imports and initial setup
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  tags: string[];
+  businessId: string;
+  inStock: boolean;
+  images: string[];
+  variants?: {
+    name: string;
+    options: string[];
+    prices?: Record<string, number>;
+  }[];
+}
+
+interface ProductFilters {
+  category?: string;
+  priceRange?: {
+    min: number;
+    max: number;
+  };
+  inStock?: boolean;
+  businessId?: string;
+  tags?: string[];
+  minRating?: number;
+}
+
+interface ProductStore {
+  products: Product[];
+  isLoading: boolean;
+  error: string | null;
+  searchProducts: (query: string) => Product[];
+  filterProducts: (filters: ProductFilters) => Product[];
+  getBusinessById: (businessId: string) => any;
+  getRecommendedProducts: (productId: string, limit?: number) => Product[];
+}
 
 export const useProductStore = create<ProductStore>()(
   persist(
     (set, get) => ({
-      // ... keep existing state and basic methods
+      products: [],
+      isLoading: false,
+      error: null,
 
       searchProducts: (query: string) => {
         const searchTerms = query.toLowerCase().split(' ');
@@ -136,6 +178,7 @@ export const useProductStore = create<ProductStore>()(
     }),
     {
       name: 'product-storage',
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );

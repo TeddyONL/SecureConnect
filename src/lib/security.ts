@@ -1,13 +1,9 @@
 import { z } from 'zod';
-import DOMPurify from 'dompurify';
-import { createHash, randomBytes } from 'crypto';
+import DOMPurify from 'isomorphic-dompurify';
 
 // Security constants
-const PEPPER = process.env.PEPPER || 'your-pepper-value';
+const PEPPER = import.meta.env.VITE_PEPPER || 'your-pepper-value';
 const MIN_PASSWORD_LENGTH = 12;
-const PASSWORD_ITERATIONS = 100000;
-const KEY_LENGTH = 64;
-const DIGEST = 'sha512';
 
 // Input validation schemas
 export const passwordSchema = z
@@ -30,8 +26,12 @@ export const security = {
 
   // Hash password with salt and pepper
   hashPassword: async (password: string): Promise<{ hash: string; salt: string }> => {
-    const salt = randomBytes(16).toString('hex');
-    const hash = await security.pbkdf2(password, salt);
+    const salt = crypto.randomUUID();
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password + PEPPER + salt);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     return { hash, salt };
   },
 
@@ -41,31 +41,28 @@ export const security = {
     hash: string,
     salt: string
   ): Promise<boolean> => {
-    const verifyHash = await security.pbkdf2(password, salt);
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password + PEPPER + salt);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const verifyHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     return hash === verifyHash;
-  },
-
-  // PBKDF2 implementation
-  pbkdf2: async (password: string, salt: string): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const pepperedPassword = password + PEPPER;
-      createHash(DIGEST)
-        .update(pepperedPassword)
-        .update(salt)
-        .digest('hex');
-    });
   },
 
   // Generate secure random token
   generateToken: (length: number = 32): string => {
-    return randomBytes(length).toString('hex');
+    const array = new Uint8Array(length);
+    crypto.getRandomValues(array);
+    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
   },
 
   // Hash sensitive data (e.g., for URLs)
-  hashData: (data: string): string => {
-    return createHash('sha256')
-      .update(data + PEPPER)
-      .digest('hex');
+  hashData: async (data: string): Promise<string> => {
+    const encoder = new TextEncoder();
+    const encoded = encoder.encode(data + PEPPER);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', encoded);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   },
 
   // Validate email
@@ -133,7 +130,18 @@ export const security = {
 
   // Security headers
   securityHeaders: {
-    'Content-Security-Policy': Object.entries(security.buildCSP())
+    'Content-Security-Policy': Object.entries({
+      'default-src': ["'self'"],
+      'script-src': ["'self'", "'wasm-unsafe-eval'"],
+      'style-src': ["'self'", "'unsafe-inline'"],
+      'img-src': ["'self'", 'data:', 'https:'],
+      'font-src': ["'self'"],
+      'connect-src': ["'self'", 'https://api.example.com'],
+      'frame-ancestors': ["'none'"],
+      'form-action': ["'self'"],
+      'base-uri': ["'self'"],
+      'object-src': ["'none'"],
+    })
       .map(([key, values]) => `${key} ${values.join(' ')}`)
       .join('; '),
     'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',

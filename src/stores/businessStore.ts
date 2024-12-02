@@ -37,42 +37,31 @@ const calculateBusinessScore = (
   let score = 0;
   const termLower = searchTerm.toLowerCase();
 
-  // Name match (highest weight)
   if (business.name.toLowerCase().includes(termLower)) {
     score += 10;
   }
-
-  // Category match
   if (business.category.toLowerCase().includes(termLower)) {
     score += 5;
   }
-
-  // Description match
   if (business.description.toLowerCase().includes(termLower)) {
     score += 3;
   }
-
-  // Features match
   if (business.features.some(feature => feature.toLowerCase().includes(termLower))) {
     score += 2;
   }
 
-  // Review score component (0-5 points)
   const reviewScore = business.stats?.averageRating || 0;
   score += reviewScore;
 
-  // Review count weight (0-3 points)
   const reviewCount = business.stats?.totalReviews || 0;
   score += Math.min(reviewCount / 10, 3);
 
-  // Verification bonus
   if (business.isVerified) {
     score += 2;
   }
 
   let distance: number | undefined;
 
-  // Location score component
   if (userLocation && business.location.latitude && business.location.longitude) {
     distance = calculateDistance(
       userLocation.latitude,
@@ -80,9 +69,6 @@ const calculateBusinessScore = (
       business.location.latitude,
       business.location.longitude
     );
-
-    // Distance scoring (inversely proportional to distance)
-    // Max 5 points for locations within 1km, decreasing as distance increases
     const distanceScore = Math.max(0, 5 - (distance / 2));
     score += distanceScore;
   }
@@ -126,22 +112,169 @@ export const useBusinessStore = create<BusinessStore>()(
         }
       },
 
-      // ... (keep existing methods)
+      addBusiness: async (business) => {
+        const newBusiness: Business = {
+          ...business,
+          id: generateId(),
+          createdAt: new Date().toISOString(),
+          reviews: [],
+          claims: [],
+          stats: {
+            totalReviews: 0,
+            averageRating: 0,
+            totalViews: 0,
+            totalBookmarks: 0,
+          },
+        };
+
+        set(state => ({
+          businesses: [...state.businesses, newBusiness]
+        }));
+
+        return newBusiness;
+      },
+
+      removeBusiness: (id) => {
+        set(state => ({
+          businesses: state.businesses.filter(b => b.id !== id)
+        }));
+      },
+
+      addReview: async (businessId, review) => {
+        const newReview: Review = {
+          ...review,
+          id: generateId(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        set(state => ({
+          businesses: state.businesses.map(business => {
+            if (business.id === businessId) {
+              const reviews = [...business.reviews, newReview];
+              const totalReviews = reviews.length;
+              const averageRating = reviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews;
+
+              return {
+                ...business,
+                reviews,
+                stats: {
+                  ...business.stats,
+                  totalReviews,
+                  averageRating
+                }
+              };
+            }
+            return business;
+          })
+        }));
+
+        return newReview;
+      },
+
+      removeReview: (businessId, reviewId) => {
+        set(state => ({
+          businesses: state.businesses.map(business => {
+            if (business.id === businessId) {
+              const reviews = business.reviews.filter(r => r.id !== reviewId);
+              const totalReviews = reviews.length;
+              const averageRating = totalReviews > 0
+                ? reviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews
+                : 0;
+
+              return {
+                ...business,
+                reviews,
+                stats: {
+                  ...business.stats,
+                  totalReviews,
+                  averageRating
+                }
+              };
+            }
+            return business;
+          })
+        }));
+      },
+
+      toggleBookmark: (userId, businessId) => {
+        set(state => ({
+          businesses: state.businesses.map(business => {
+            if (business.id === businessId) {
+              const totalBookmarks = business.stats.totalBookmarks + 1;
+              return {
+                ...business,
+                stats: {
+                  ...business.stats,
+                  totalBookmarks
+                }
+              };
+            }
+            return business;
+          })
+        }));
+      },
+
+      submitClaim: async (claim) => {
+        const newClaim: BusinessClaim = {
+          ...claim,
+          id: generateId(),
+          createdAt: new Date().toISOString(),
+        };
+
+        set(state => ({
+          businesses: state.businesses.map(business => {
+            if (business.id === claim.businessId) {
+              return {
+                ...business,
+                claims: [...business.claims, newClaim]
+              };
+            }
+            return business;
+          })
+        }));
+
+        return newClaim;
+      },
+
+      verifyBusiness: (businessId, badge) => {
+        set(state => ({
+          businesses: state.businesses.map(business => {
+            if (business.id === businessId) {
+              return {
+                ...business,
+                isVerified: true,
+                verificationBadges: [...(business.verificationBadges || []), badge]
+              };
+            }
+            return business;
+          })
+        }));
+      },
 
       searchBusinesses: (query, userLocation) => {
         const { businesses } = get();
         if (!query.trim()) return businesses;
 
-        // Score and sort businesses
-        const scoredBusinesses = businesses
+        return businesses
           .map(business => calculateBusinessScore(business, query, userLocation))
           .filter(business => business.score > 0)
           .sort((a, b) => b.score - a.score);
-
-        return scoredBusinesses;
       },
 
-      // ... (keep other existing methods)
+      filterByLocation: (county) => {
+        const { businesses } = get();
+        return businesses.filter(business => 
+          business.location.county.toLowerCase() === county.toLowerCase()
+        );
+      },
+
+      filterByInstitutionType: (type) => {
+        const { businesses } = get();
+        return businesses.filter(business => 
+          business.category.toLowerCase() === type.toLowerCase()
+        );
+      },
     }),
     {
       name: 'business-storage',
